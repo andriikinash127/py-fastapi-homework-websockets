@@ -59,7 +59,6 @@ class UserActivityWebSocketManager(UserActivityWebSocketManagerInterface):
                 exclude=user_id,
             )
 
-
     async def _broadcast(
         self,
         message: dict,
