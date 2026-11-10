@@ -2,6 +2,7 @@
 import aioboto3
 from botocore.exceptions import (
     BotoCoreError,
+    ClientError,
     ConnectionError,
     HTTPClientError,
     NoCredentialsError,
@@ -55,16 +56,29 @@ class S3StorageClient(S3StorageInterface):
             async with self._session.client(
                 "s3", endpoint_url=self._endpoint_url
             ) as client:
-                await client.put_object(
-                    Bucket=self._bucket_name,
-                    Key=file_name,
-                    Body=file_data,
-                    ContentType="image/jpeg"
-                )
+                try:
+                    await self._put_object(client, file_name, file_data)
+                except ClientError as e:
+                    if e.response.get("Error", {}).get("Code") != "NoSuchBucket":
+                        raise
+                    # The bucket may not exist yet (e.g. setup container is
+                    # still running); create it and retry once.
+                    await client.create_bucket(Bucket=self._bucket_name)
+                    await self._put_object(client, file_name, file_data)
         except (ConnectionError, HTTPClientError, NoCredentialsError) as e:
             raise S3ConnectionError(f"Failed to connect to S3 storage: {e!s}") from e
-        except BotoCoreError as e:
+        except (BotoCoreError, ClientError) as e:
             raise S3FileUploadError(f"Failed to upload to S3 storage: {e!s}") from e
+
+    async def _put_object(
+        self, client, file_name: str, file_data: bytes | bytearray
+    ) -> None:
+        await client.put_object(
+            Bucket=self._bucket_name,
+            Key=file_name,
+            Body=file_data,
+            ContentType="image/jpeg",
+        )
 
     async def get_file_url(self, file_name: str) -> str:
         """
