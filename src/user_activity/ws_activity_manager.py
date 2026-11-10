@@ -40,22 +40,11 @@ class UserActivityWebSocketManager(UserActivityWebSocketManagerInterface):
                 exclude=user_data.user_id,
             )
 
-    async def disconnect(self, user_id: int, websocket: WebSocket) -> bool:
-        """
-        Remove a WebSocket connection for a user and broadcast a
-        "user_disconnected" event once the user has no active connections left.
-
-        Args:
-            user_id (int): The ID of the disconnecting user.
-            websocket (WebSocket): The WebSocket connection to remove.
-
-        Returns:
-            bool: True if no active connections remain, otherwise False.
-        """
+    async def disconnect(self, user_id: int, websocket: WebSocket) -> None:
         connections = self.active_connections.get(user_id)
 
         if not connections:
-            return False
+            return
 
         connections.remove(websocket)
 
@@ -69,9 +58,7 @@ class UserActivityWebSocketManager(UserActivityWebSocketManagerInterface):
                 },
                 exclude=user_id,
             )
-            return True
 
-        return False
 
     async def _broadcast(
         self,

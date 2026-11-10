@@ -63,7 +63,7 @@ class UserActivityWebSocketManagerInterface(ABC):
         """
 
     @abstractmethod
-    async def disconnect(self, user_id: int, websocket: WebSocket) -> bool:
+    async def disconnect(self, user_id: int, websocket: WebSocket) -> None:
         """
         Remove a WebSocket connection for a user.
 
@@ -72,7 +72,7 @@ class UserActivityWebSocketManagerInterface(ABC):
             websocket (WebSocket): The WebSocket connection to remove.
 
         Returns:
-            bool: True if the user has no active connections left, otherwise False.
+            None
         """
 
     @abstractmethod

@@ -101,12 +101,9 @@ class UserActivityService(UserActivityServiceInterface):
         except WebSocketDisconnect:
             pass
         finally:
-            is_last_connection = await self.activity_ws_manager.disconnect(
-                user_id,
-                websocket,
-            )
+            await self.activity_ws_manager.disconnect(user_id, websocket)
 
-            if is_last_connection:
+            if not self.activity_ws_manager.active_connections.get(user_id):
                 await self.activity_repo.update_user_activity(
                     UpdateUserActivitySchema(
                         user_id=user_id,
