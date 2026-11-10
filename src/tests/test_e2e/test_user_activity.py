@@ -119,33 +119,32 @@ async def test_two_users_connect_and_receive_connect_and_disconnect_events(
         )
 
         async with aconnect_ws(WS_PATH, client) as ws2:
-            async with aconnect_ws(WS_PATH, client) as ws2:
-                await ws2.send_json({"token": token2})
+            await ws2.send_json({"token": token2})
 
-                user1_connected_event = await _receive_json(ws1)
-                assert user1_connected_event["event"] == "user_connected", (
-                    f"Expected 'user_connected' event, got {user1_connected_event['event']}"
-                )
-                assert user1_connected_event["user"]["user_id"] == user2_id, (
-                    "User1 should be notified that user2 connected"
-                )
-
-                snapshot2 = await _receive_json(ws2)
-                assert snapshot2["event"] == "online_users", (
-                    f"Expected 'online_users' event, got {snapshot2['event']}"
-                )
-                assert {user["user_id"] for user in snapshot2["users"]} == {
-                    user1_id,
-                    user2_id,
-                }, "User2's snapshot should contain both online users"
-
-            user1_disconnected_event = await _receive_json(ws1)
-            assert user1_disconnected_event["event"] == "user_disconnected", (
-                f"Expected 'user_disconnected' event, got {user1_disconnected_event['event']}"
+            user1_connected_event = await _receive_json(ws1)
+            assert user1_connected_event["event"] == "user_connected", (
+                f"Expected 'user_connected' event, got {user1_connected_event['event']}"
             )
-            assert user1_disconnected_event["user_id"] == user2_id, (
-                "User1 should be notified that user2 disconnected"
+            assert user1_connected_event["user"]["user_id"] == user2_id, (
+                "User1 should be notified that user2 connected"
             )
+
+            snapshot2 = await _receive_json(ws2)
+            assert snapshot2["event"] == "online_users", (
+                f"Expected 'online_users' event, got {snapshot2['event']}"
+            )
+            assert {user["user_id"] for user in snapshot2["users"]} == {
+                user1_id,
+                user2_id,
+            }, "User2's snapshot should contain both online users"
+
+        user1_disconnected_event = await _receive_json(ws1)
+        assert user1_disconnected_event["event"] == "user_disconnected", (
+            f"Expected 'user_disconnected' event, got {user1_disconnected_event['event']}"
+        )
+        assert user1_disconnected_event["user_id"] == user2_id, (
+            "User1 should be notified that user2 disconnected"
+        )
 
 
 @pytest.mark.e2e

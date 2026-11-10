@@ -58,6 +58,7 @@ class UserActivityRepository(UserActivityRepoInterface):
         updated_data = await self.db["user_activity"].find_one_and_update(
             {"user_id": user_data.user_id},
             {"$set": user_data.model_dump(exclude_none=True)},
+            {"_id": 0},
             return_document=ReturnDocument.AFTER,
         )
 

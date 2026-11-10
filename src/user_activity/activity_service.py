@@ -97,7 +97,7 @@ class UserActivityService(UserActivityServiceInterface):
         )
         try:
             while True:
-                await websocket.receive_text()
+                await websocket.receive_json()
         except WebSocketDisconnect:
             pass
         finally:

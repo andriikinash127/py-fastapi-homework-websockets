@@ -35,11 +35,7 @@ class UserActivityWebSocketManager(UserActivityWebSocketManagerInterface):
             await self._broadcast(
                 {
                     "event": "user_connected",
-                    "user": {
-                        "user_id": user_data.user_id,
-                        "email": user_data.email,
-                        "status": user_data.status,
-                    },
+                    "user": user_data.model_dump(mode="json"),
                 },
                 exclude=user_data.user_id,
             )
